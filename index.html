@@ -1,120 +1,136 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editar Cliente</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alta de Clientes</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
-    input, button { padding: 10px; margin: 5px 0; width: 100%; max-width: 400px; }
-    .campo { margin-bottom: 15px; }
-    .sugerencias {
-      background: white;
-      border: 1px solid #ccc;
-      max-width: 400px;
-      position: absolute;
-      z-index: 1;
-    }
-    .sugerencias div {
-      padding: 8px;
-      cursor: pointer;
-    }
-    .sugerencias div:hover {
-      background: #e0e0e0;
-    }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+    h2 { text-align: center; }
+    form { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; }
+    .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    button { margin-top: 20px; width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    button:hover { background: #0056b3; }
   </style>
 </head>
 <body>
-  <h2>Editar Cliente</h2>
+  <h2>Alta de Cliente</h2>
+  <form id="clienteForm">
+    <label>Cliente (ID)</label>
+    <input type="text" id="cliente_id" required />
 
-  <div class="campo">
-    <label for="busqueda">Buscar cliente:</label>
-    <input type="text" id="busqueda" autocomplete="off">
-    <div id="sugerencias" class="sugerencias"></div>
-  </div>
+    <label>Categoría de Precio</label>
+    <select id="cat_precio" required>
+      <option value="">Selecciona</option>
+      <option value="Menudeo">Menudeo</option>
+      <option value="1/2 Mayoreo">1/2 Mayoreo</option>
+      <option value="Mayoreo">Mayoreo</option>
+    </select>
 
-  <div id="formulario" style="display:none">
-    <div class="campo">
-      <label for="nombrefiscal">Nombre Fiscal:</label>
-      <input type="text" id="nombrefiscal" disabled>
+    <label>Nombre</label>
+    <input type="text" id="nombre" required />
+
+    <label>Dirección</label>
+    <input type="text" id="direccion" />
+
+    <label>Colonia</label>
+    <input type="text" id="colonia" />
+
+    <label>Municipio</label>
+    <input type="text" id="municipio" />
+
+    <label>Número Exterior</label>
+    <input type="text" id="num_ext" />
+
+    <label>Ciudad</label>
+    <input type="text" id="ciudad" />
+
+    <label>País</label>
+    <input type="text" id="pais" value="México" />
+
+    <label>Estado</label>
+    <input type="text" id="estado" />
+
+    <label>Código Postal</label>
+    <input type="text" id="cp" />
+
+    <label>RFC</label>
+    <input type="text" id="rfc" />
+
+    <label>Régimen</label>
+    <input type="text" id="regimen" />
+
+    <label>Email</label>
+    <input type="email" id="email" />
+
+    <label>Teléfono</label>
+    <input type="text" id="tel" />
+
+    <label>Límite de Crédito</label>
+    <input type="number" id="limite" step="0.01" />
+
+    <label>Agregar %</label>
+    <input type="number" id="agregar" step="0.01" />
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="comisiona" />
+      <label for="comisiona">Cliente que causa Comisión</label>
     </div>
-    <button id="editar">✏️ Editar</button>
-    <button id="guardar" style="display:none">💾 Guardar</button>
-  </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="desglosar_ieps" />
+      <label for="desglosar_ieps">Desglosar IEPS al Facturar</label>
+    </div>
+
+    <button type="submit">Grabar Cliente</button>
+  </form>
 
   <script>
     const { createClient } = supabase;
     const supabaseClient = createClient(
-      'https://cvpbtjlupswbyxenugpz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2cGJ0amx1cHN3Ynl4ZW51Z3B6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3MDIxOTQsImV4cCI6MjA2MzI3ODE5NH0.iiJsYM3TtaGPdeCtPcEXwAz3LfFc1uJGECEvOErvrqY'
+      "https://cvpbtjlupswbyxenugpz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2cGJ0amx1cHN3Ynl4ZW51Z3B6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3MDIxOTQsImV4cCI6MjA2MzI3ODE5NH0.iiJsYM3TtaGPdeCtPcEXwAz3LfFc1uJGECEvOErvrqY"
     );
 
-    const busqueda = document.getElementById('busqueda');
-    const sugerencias = document.getElementById('sugerencias');
-    const formulario = document.getElementById('formulario');
-    const nombrefiscal = document.getElementById('nombrefiscal');
-    const editarBtn = document.getElementById('editar');
-    const guardarBtn = document.getElementById('guardar');
+    document.getElementById('clienteForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-    let clienteSeleccionado = null;
-
-    busqueda.addEventListener('input', async () => {
-      const texto = busqueda.value.trim();
-      if (texto.length < 2) {
-        sugerencias.innerHTML = '';
-        return;
-      }
-
-      const { data, error } = await supabaseClient
-        .from('clientes')
-        .select('id, nombrefiscal')
-        .ilike('nombrefiscal', `%${texto}%`)
-        .limit(5);
-
-      sugerencias.innerHTML = '';
-      if (data) {
-        data.forEach(c => {
-          const div = document.createElement('div');
-          div.textContent = c.nombrefiscal;
-          div.onclick = () => seleccionarCliente(c);
-          sugerencias.appendChild(div);
-        });
-      }
-    });
-
-    function seleccionarCliente(cliente) {
-      clienteSeleccionado = cliente;
-      busqueda.value = cliente.nombrefiscal;
-      nombrefiscal.value = cliente.nombrefiscal;
-      formulario.style.display = 'block';
-      sugerencias.innerHTML = '';
-    }
-
-    editarBtn.onclick = () => {
-      nombrefiscal.disabled = false;
-      guardarBtn.style.display = 'inline';
-      editarBtn.style.display = 'none';
-    }
-
-    guardarBtn.onclick = async () => {
-      const nuevoNombre = nombrefiscal.value.trim();
-      if (!clienteSeleccionado || !nuevoNombre) return;
+      const datos = {
+        cliente_id: document.getElementById('cliente_id').value.trim(),
+        cat_precio: document.getElementById('cat_precio').value,
+        nombre: document.getElementById('nombre').value.trim(),
+        direccion: document.getElementById('direccion').value.trim(),
+        colonia: document.getElementById('colonia').value.trim(),
+        municipio: document.getElementById('municipio').value.trim(),
+        num_ext: document.getElementById('num_ext').value.trim(),
+        ciudad: document.getElementById('ciudad').value.trim(),
+        pais: document.getElementById('pais').value.trim(),
+        estado: document.getElementById('estado').value.trim(),
+        cp: document.getElementById('cp').value.trim(),
+        rfc: document.getElementById('rfc').value.trim(),
+        regimen: document.getElementById('regimen').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        tel: document.getElementById('tel').value.trim(),
+        limite: parseFloat(document.getElementById('limite').value) || 0,
+        agregar: parseFloat(document.getElementById('agregar').value) || 0,
+        comisiona: document.getElementById('comisiona').checked,
+        desglosar_ieps: document.getElementById('desglosar_ieps').checked
+      };
 
       const { error } = await supabaseClient
         .from('clientes')
-        .update({ nombrefiscal: nuevoNombre })
-        .eq('id', clienteSeleccionado.id);
+        .insert([datos]);
 
-      if (!error) {
-        alert('Nombre actualizado');
-        editarBtn.style.display = 'inline';
-        guardarBtn.style.display = 'none';
-        nombrefiscal.disabled = true;
+      if (error) {
+        alert("Error al guardar: " + error.message);
       } else {
-        alert('Error al guardar');
+        alert("Cliente guardado correctamente");
+        document.getElementById('clienteForm').reset();
       }
-    }
+    });
   </script>
 </body>
 </html>
