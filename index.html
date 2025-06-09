@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alta de Clientes</title>
+  <title>Alta y Edición de Clientes</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
@@ -14,13 +14,16 @@
     .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
     button { margin-top: 20px; width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
     button:hover { background: #0056b3; }
+    #buscarBtn { background: #28a745; }
+    #buscarBtn:hover { background: #1e7e34; }
   </style>
 </head>
 <body>
-  <h2>Alta de Cliente</h2>
+  <h2>Alta y Edición de Cliente</h2>
   <form id="clienteForm">
     <label>Cliente (ID)</label>
     <input type="text" id="cliente_id" required />
+    <button type="button" id="buscarBtn">Buscar Cliente</button>
 
     <label>Categoría de Precio</label>
     <select id="cat_precio" required>
@@ -32,60 +35,31 @@
 
     <label>Nombre</label>
     <input type="text" id="nombre" required />
-
-    <label>Dirección</label>
-    <input type="text" id="direccion" />
-
-    <label>Colonia</label>
-    <input type="text" id="colonia" />
-
-    <label>Municipio</label>
-    <input type="text" id="municipio" />
-
-    <label>Número Exterior</label>
-    <input type="text" id="num_ext" />
-
-    <label>Ciudad</label>
-    <input type="text" id="ciudad" />
-
-    <label>País</label>
-    <input type="text" id="pais" value="México" />
-
-    <label>Estado</label>
-    <input type="text" id="estado" />
-
-    <label>Código Postal</label>
-    <input type="text" id="cp" />
-
-    <label>RFC</label>
-    <input type="text" id="rfc" />
-
-    <label>Régimen</label>
-    <input type="text" id="regimen" />
-
-    <label>Email</label>
-    <input type="email" id="email" />
-
-    <label>Teléfono</label>
-    <input type="text" id="tel" />
-
-    <label>Límite de Crédito</label>
-    <input type="number" id="limite" step="0.01" />
-
-    <label>Agregar %</label>
-    <input type="number" id="agregar" step="0.01" />
+    <label>Dirección</label><input type="text" id="direccion" />
+    <label>Colonia</label><input type="text" id="colonia" />
+    <label>Municipio</label><input type="text" id="municipio" />
+    <label>Número Exterior</label><input type="text" id="num_ext" />
+    <label>Ciudad</label><input type="text" id="ciudad" />
+    <label>País</label><input type="text" id="pais" value="México" />
+    <label>Estado</label><input type="text" id="estado" />
+    <label>Código Postal</label><input type="text" id="cp" />
+    <label>RFC</label><input type="text" id="rfc" />
+    <label>Régimen</label><input type="text" id="regimen" />
+    <label>Email</label><input type="email" id="email" />
+    <label>Teléfono</label><input type="text" id="tel" />
+    <label>Límite de Crédito</label><input type="number" id="limite" step="0.01" />
+    <label>Agregar %</label><input type="number" id="agregar" step="0.01" />
 
     <div class="checkbox-group">
       <input type="checkbox" id="comisiona" />
       <label for="comisiona">Cliente que causa Comisión</label>
     </div>
-
     <div class="checkbox-group">
       <input type="checkbox" id="desglosar_ieps" />
       <label for="desglosar_ieps">Desglosar IEPS al Facturar</label>
     </div>
 
-    <button type="submit">Grabar Cliente</button>
+    <button type="submit" id="guardarBtn">Guardar Cliente</button>
   </form>
 
   <script>
@@ -95,10 +69,10 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2cGJ0amx1cHN3Ynl4ZW51Z3B6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3MDIxOTQsImV4cCI6MjA2MzI3ODE5NH0.iiJsYM3TtaGPdeCtPcEXwAz3LfFc1uJGECEvOErvrqY"
     );
 
-    document.getElementById('clienteForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+    const form = document.getElementById('clienteForm');
 
-      const datos = {
+    function getDatosFormulario() {
+      return {
         cliente_id: document.getElementById('cliente_id').value.trim(),
         cat_precio: document.getElementById('cat_precio').value,
         nombre: document.getElementById('nombre').value.trim(),
@@ -119,16 +93,70 @@
         comisiona: document.getElementById('comisiona').checked,
         desglosar_ieps: document.getElementById('desglosar_ieps').checked
       };
+    }
 
-      const { error } = await supabaseClient
+    function llenarFormulario(datos) {
+      for (let key in datos) {
+        const campo = document.getElementById(key);
+        if (campo) {
+          if (campo.type === "checkbox") {
+            campo.checked = datos[key];
+          } else {
+            campo.value = datos[key];
+          }
+        }
+      }
+    }
+
+    document.getElementById('buscarBtn').addEventListener('click', async () => {
+      const clienteID = document.getElementById('cliente_id').value.trim();
+      if (!clienteID) return alert("Ingresa un ID de cliente para buscar.");
+
+      const { data, error } = await supabaseClient
         .from('clientes')
-        .insert([datos]);
+        .select('*')
+        .eq('cliente_id', clienteID)
+        .maybeSingle();
 
       if (error) {
-        alert("Error al guardar: " + error.message);
+        alert("Error al buscar: " + error.message);
+      } else if (data) {
+        llenarFormulario(data);
+        alert("Cliente encontrado y cargado.");
       } else {
-        alert("Cliente guardado correctamente");
-        document.getElementById('clienteForm').reset();
+        alert("Cliente no encontrado. Puedes darlo de alta.");
+        form.reset();
+        document.getElementById('cliente_id').value = clienteID;
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const datos = getDatosFormulario();
+
+      const { data: existente } = await supabaseClient
+        .from('clientes')
+        .select('cliente_id')
+        .eq('cliente_id', datos.cliente_id)
+        .maybeSingle();
+
+      let resultado;
+      if (existente) {
+        resultado = await supabaseClient
+          .from('clientes')
+          .update(datos)
+          .eq('cliente_id', datos.cliente_id);
+      } else {
+        resultado = await supabaseClient
+          .from('clientes')
+          .insert([datos]);
+      }
+
+      if (resultado.error) {
+        alert("Error al guardar: " + resultado.error.message);
+      } else {
+        alert("Cliente guardado correctamente.");
+        form.reset();
       }
     });
   </script>
